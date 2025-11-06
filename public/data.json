@@ -1,0 +1,15 @@
+{
+  "documents": [
+    {
+      "id": "doc-1",
+      "name": "Welcome.txt",
+      "content": "This is a sample document. You can upload your own .txt files to chat with them. The content of your documents will be used by the AI to answer your questions. All your data is stored locally in your browser and is never sent to a server."
+    }
+  ],
+  "chatHistory": [
+    {
+      "role": "ai",
+      "content": "Hello! I'm a RAG chatbot. Upload your documents and ask me anything about them."
+    }
+  ]
+}
