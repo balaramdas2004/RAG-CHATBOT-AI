@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import ChatMessage from "@/components/ChatMessage.jsx";
 import Icon from "@/components/Icon.jsx";
 
@@ -10,18 +10,39 @@ import Icon from "@/components/Icon.jsx";
  */
 export default function ChatWindow({ chatHistory = [], isLoading = false }) {
   const chatContainerRef = useRef(null);
+  const [isUserAtBottom, setIsUserAtBottom] = useState(true);
 
-  // Effect to scroll to the bottom of the chat window when new messages are added or loading state changes.
+  // Track whether the user has scrolled away from the bottom so we don't
+  // force-scroll when they are reading older messages.
   useEffect(() => {
-    if (chatContainerRef.current) {
+    const container = chatContainerRef.current;
+    if (!container) return;
+
+    const handleScroll = () => {
+      const { scrollTop, scrollHeight, clientHeight } = container;
+      const distanceFromBottom = scrollHeight - (scrollTop + clientHeight);
+      // Consider the user "at bottom" if they are within 50px of it
+      setIsUserAtBottom(distanceFromBottom < 50);
+    };
+
+    container.addEventListener("scroll", handleScroll);
+    return () => {
+      container.removeEventListener("scroll", handleScroll);
+    };
+  }, []);
+
+  // Effect to scroll to the bottom of the chat window when new messages are added
+  // or loading state changes, but only if the user is already near the bottom.
+  useEffect(() => {
+    if (chatContainerRef.current && isUserAtBottom) {
       chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
     }
-  }, [chatHistory, isLoading]);
+  }, [chatHistory, isLoading, isUserAtBottom]);
 
   return (
     <div
       ref={chatContainerRef}
-      className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 particle-bg perspective-3d relative"
+      className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 particle-bg perspective-3d relative min-h-0"
       aria-live="polite"
       style={{
         background: "linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, rgba(5, 150, 105, 0.02) 50%, rgba(4, 120, 87, 0.05) 100%)"
